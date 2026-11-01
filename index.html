@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pill Tracker</title>
+  <meta name="description" content="Tap the day you took your pill. One tap a day.">
+  <meta name="theme-color" content="#0d9488">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pills">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <style>
+    :root {
+      --bg: #f3f6f5;
+      --card: #ffffff;
+      --text: #15201e;
+      --muted: #5f6f6c;
+      --line: #dfe6e4;
+      --accent: #0d9488;
+      --accent-strong: #0f766e;
+      --accent-text: #ffffff;
+      --accent-soft: #d8f3ef;
+      --ok: #16a34a;
+      --shadow: 0 1px 2px rgba(0,0,0,.05), 0 6px 20px rgba(0,0,0,.06);
+      color-scheme: light dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0f1716;
+        --card: #182220;
+        --text: #eef4f2;
+        --muted: #97a7a3;
+        --line: #26332f;
+        --accent: #2dd4bf;
+        --accent-strong: #14b8a6;
+        --accent-text: #052e2b;
+        --accent-soft: #123b37;
+        --ok: #4ade80;
+        --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #0f1716;
+      --card: #182220;
+      --text: #eef4f2;
+      --muted: #97a7a3;
+      --line: #26332f;
+      --accent: #2dd4bf;
+      --accent-strong: #14b8a6;
+      --accent-text: #052e2b;
+      --accent-soft: #123b37;
+      --ok: #4ade80;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      padding: calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+      min-height: 100vh;
+    }
+    main { max-width: 440px; margin: 0 auto; }
+
+    header { display: flex; align-items: center; gap: 10px; margin: 4px 0 16px; }
+    header .logo {
+      width: 36px; height: 36px; border-radius: 10px; background: var(--accent);
+      display: grid; place-items: center; flex: none;
+    }
+    header h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+
+    .status {
+      background: var(--card); border-radius: 18px; padding: 18px 18px 16px;
+      box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px;
+    }
+    .status .ring {
+      width: 54px; height: 54px; border-radius: 50%; flex: none;
+      border: 3px solid var(--line); display: grid; place-items: center;
+      color: var(--muted); font-size: 24px; transition: all .2s ease;
+    }
+    .status.taken .ring { border-color: var(--ok); background: var(--ok); color: #fff; }
+    .status .title { font-size: 19px; font-weight: 650; margin: 0 0 3px; }
+    .status .sub { color: var(--muted); font-size: 14px; margin: 0; }
+
+    .big {
+      display: block; width: 100%; margin: 14px 0 22px; padding: 16px;
+      border: 0; border-radius: 16px; background: var(--accent); color: var(--accent-text);
+      font-size: 17px; font-weight: 650; cursor: pointer; box-shadow: var(--shadow);
+      transition: transform .08s ease, background .15s ease;
+    }
+    .big:active { transform: scale(.985); background: var(--accent-strong); }
+    .big[disabled] { opacity: .55; cursor: default; }
+
+    h2 { font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px 4px; }
+
+    .days { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .day {
+      width: 100%; display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; border-radius: 14px; border: 1.5px solid var(--line);
+      background: var(--card); color: var(--text); font: inherit; font-size: 17px;
+      cursor: pointer; text-align: left; transition: background .15s ease, border-color .15s ease, transform .08s ease;
+    }
+    .day:active { transform: scale(.99); }
+    .day .name { flex: 1; font-weight: 550; }
+    .day .today {
+      font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+      color: var(--accent-strong); background: var(--accent-soft); padding: 3px 8px; border-radius: 999px;
+    }
+    .day .check {
+      width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line);
+      display: grid; place-items: center; color: transparent; flex: none; transition: all .15s ease;
+    }
+    .day.is-today { border-color: var(--accent); }
+    .day.selected { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .day.selected .check { background: #fff; border-color: #fff; color: var(--accent-strong); }
+    .day.selected .today { background: rgba(255,255,255,.25); color: var(--accent-text); }
+
+    .hint { color: var(--muted); font-size: 13px; text-align: center; margin: 18px 0 0; line-height: 1.5; }
+
+    .install {
+      margin-top: 22px; padding: 14px 16px; border-radius: 14px; background: var(--card);
+      border: 1px dashed var(--line); font-size: 14px; color: var(--muted); line-height: 1.5;
+    }
+    .install strong { color: var(--text); }
+    .install button {
+      margin-top: 10px; padding: 10px 14px; border-radius: 10px; border: 0;
+      background: var(--accent-soft); color: var(--accent-strong); font: inherit; font-weight: 650; cursor: pointer;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="logo" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.5 20.5a5 5 0 0 1-7-7l10-10a5 5 0 0 1 7 7Z"/><path d="M8.5 8.5l7 7"/>
+        </svg>
+      </div>
+      <h1>Pill Tracker</h1>
+    </header>
+
+    <section class="status" id="status" aria-live="polite">
+      <div class="ring" id="ring">○</div>
+      <div>
+        <p class="title" id="statusTitle">Not taken yet today</p>
+        <p class="sub" id="statusSub">Tap today's day once you've taken it.</p>
+      </div>
+    </section>
+
+    <button class="big" id="takeToday" type="button">I took my pill today</button>
+
+    <h2>This week</h2>
+    <ul class="days" id="days"></ul>
+
+    <p class="hint">Tap a day to mark it as taken. Only one day stays marked.<br>Tap the marked day again to clear it.</p>
+
+    <div class="install" id="install">
+      <strong>Put it on your home screen</strong>
+      <div id="installAndroid" class="hidden">Install it like an app so it opens full-screen and works offline.<br><button type="button" id="installBtn">Install app</button></div>
+      <div id="installIos" class="hidden">On iPhone: tap the <strong>Share</strong> button in Safari, then <strong>Add to Home Screen</strong>.</div>
+      <div id="installOther">Open this page on your phone, then use your browser's <strong>Add to Home Screen</strong> option.</div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      var KEY = 'pillTracker.v1';
+
+      function pad(n) { return (n < 10 ? '0' : '') + n; }
+      function iso(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+      function startOfToday() { var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+      function dayIndex(d) { return (d.getDay() + 6) % 7; }           // Monday = 0 ... Sunday = 6
+      function dateForDay(idx) {                                      // most recent date (today or earlier) on that weekday
+        var d = startOfToday();
+        var back = (dayIndex(d) - idx + 7) % 7;
+        d.setDate(d.getDate() - back);
+        return d;
+      }
+      function parseIso(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+      function pretty(d) { return DAYS[dayIndex(d)] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()]; }
+
+      function load() {
+        try {
+          var s = JSON.parse(localStorage.getItem(KEY));
+          if (s && typeof s.day === 'number' && typeof s.date === 'string') return s;
+        } catch (e) {}
+        return null;
+      }
+      function save(s) {
+        try { s ? localStorage.setItem(KEY, JSON.stringify(s)) : localStorage.removeItem(KEY); } catch (e) {}
+      }
+
+      var state = load();
+      var list = document.getElementById('days');
+      var statusEl = document.getElementById('status');
+      var ring = document.getElementById('ring');
+      var statusTitle = document.getElementById('statusTitle');
+      var statusSub = document.getElementById('statusSub');
+      var takeToday = document.getElementById('takeToday');
+
+      function render() {
+        var today = startOfToday();
+        var todayIdx = dayIndex(today);
+        var takenToday = !!state && state.date === iso(today);
+
+        list.innerHTML = '';
+        DAYS.forEach(function (name, idx) {
+          var li = document.createElement('li');
+          var btn = document.createElement('button');
+          var selected = !!state && state.day === idx;
+          btn.type = 'button';
+          btn.className = 'day' + (idx === todayIdx ? ' is-today' : '') + (selected ? ' selected' : '');
+          btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+          btn.innerHTML =
+            '<span class="name">' + name + '</span>' +
+            (idx === todayIdx ? '<span class="today">Today</span>' : '') +
+            '<span class="check" aria-hidden="true">' +
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>' +
+            '</span>';
+          btn.addEventListener('click', function () { toggle(idx); });
+          li.appendChild(btn);
+          list.appendChild(li);
+        });
+
+        statusEl.classList.toggle('taken', takenToday);
+        ring.textContent = takenToday ? '✓' : '○';
+        takeToday.disabled = takenToday;
+        takeToday.textContent = takenToday ? 'Done for today' : 'I took my pill today';
+
+        if (takenToday) {
+          statusTitle.textContent = 'Taken today';
+          statusSub.textContent = pretty(today) + '. Nice one.';
+        } else if (state) {
+          statusTitle.textContent = 'Not taken yet today';
+          statusSub.textContent = 'Last taken: ' + pretty(parseIso(state.date)) + '.';
+        } else {
+          statusTitle.textContent = 'Not taken yet today';
+          statusSub.textContent = "Tap today's day once you've taken it.";
+        }
+      }
+
+      function toggle(idx) {
+        if (state && state.day === idx) {
+          state = null;                                   // tapping the marked day clears it
+        } else {
+          state = { day: idx, date: iso(dateForDay(idx)) };
+        }
+        save(state);
+        render();
+      }
+
+      takeToday.addEventListener('click', function () { toggle(dayIndex(startOfToday())); });
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
+      render();
+
+      // ---- Install helpers ----
+      var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      var installBox = document.getElementById('install');
+      if (standalone) {
+        installBox.classList.add('hidden');
+      } else {
+        var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+        if (isIos) {
+          document.getElementById('installIos').classList.remove('hidden');
+          document.getElementById('installOther').classList.add('hidden');
+        }
+        var deferred = null;
+        window.addEventListener('beforeinstallprompt', function (e) {
+          e.preventDefault();
+          deferred = e;
+          document.getElementById('installAndroid').classList.remove('hidden');
+          document.getElementById('installOther').classList.add('hidden');
+        });
+        document.getElementById('installBtn').addEventListener('click', function () {
+          if (!deferred) return;
+          deferred.prompt();
+          deferred.userChoice.then(function () { deferred = null; installBox.classList.add('hidden'); });
+        });
+        window.addEventListener('appinstalled', function () { installBox.classList.add('hidden'); });
+      }
+
+      if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+      }
+    })();
+  </script>
+</body>
+</html>
