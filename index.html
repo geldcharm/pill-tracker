@@ -1,12 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-skin="candy">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Pill Tracker</title>
   <meta name="description" content="Tap the day you took your pill. One tap a day.">
-  <meta name="theme-color" content="#f4f1ff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1b1730" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" id="themeColor" content="#f4f1ff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -16,54 +15,158 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&family=Poppins:wght@500;600;700&display=swap">
+  <script>
+    // Apply the saved design before the first paint so there is no flash of the default look.
+    (function () {
+      try {
+        var p = JSON.parse(localStorage.getItem('pillTracker.prefs') || '{}');
+        if (p.skin) document.documentElement.setAttribute('data-skin', p.skin);
+      } catch (e) {}
+    })();
+  </script>
   <style>
-    /* Layout: one phone-width column; a candy-coloured week where the marked day wears its own colour. */
-    :root {
+    /* ===== Designs. Each one is a full set of tokens on [data-skin], so the same
+       selectors style both the page (html[data-skin]) and the small previews
+       in Settings (div[data-skin]). ===== */
+    :root, [data-skin="candy"] {
       --bg: #f4f1ff;
-      --card: #ffffff;
-      --text: #2b2440;
-      --muted: #6f6886;
-      --line: #e6e0f6;
-      --pop: #ff5c8a;
-      --pop-2: #ff9f1c;
-      --ok: #22c55e;
-      --ok-soft: #dcfce7;
-      --chip: #ece7ff;
-      --chip-text: #6b4fd8;
-      --blob-1: rgba(255, 92, 138, .28);
-      --blob-2: rgba(46, 196, 182, .28);
-      --blob-3: rgba(255, 183, 3, .26);
+      --bg-image:
+        radial-gradient(42vw 42vw at 8% 6%, rgba(255, 92, 138, .28), transparent 70%),
+        radial-gradient(48vw 48vw at 100% 28%, rgba(46, 196, 182, .28), transparent 70%),
+        radial-gradient(44vw 44vw at 20% 100%, rgba(255, 183, 3, .26), transparent 70%);
+      --bg-size: auto; --bg-repeat: no-repeat;
+      --card: #ffffff; --card-border: transparent;
+      --text: #2b2440; --muted: #6f6886; --line: #e6e0f6;
+      --pop: #ff5c8a; --pop-2: #ff9f1c; --pop-text: #ffffff; --pop-shadow: rgba(255, 92, 138, .35);
+      --ok: #22c55e; --chip: #ece7ff; --chip-text: #6b4fd8;
       --shadow: 0 2px 4px rgba(43, 36, 64, .05), 0 10px 28px rgba(43, 36, 64, .09);
+      --radius: 18px;
       --display: "Fredoka", "Nunito", -apple-system, "Segoe UI", sans-serif;
       --body: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      /* one colour per weekday, plus the text colour that reads on it */
-      --d0: #ff5c8a; --d0-on: #fff;
-      --d1: #ff8c42; --d1-on: #fff;
-      --d2: #ffc233; --d2-on: #3a2a00;
-      --d3: #2ec4b6; --d3-on: #fff;
-      --d4: #4cc9f0; --d4-on: #0b2a3a;
-      --d5: #9b7bff; --d5-on: #fff;
+      --d0: #ff5c8a; --d0-on: #fff;  --d1: #ff8c42; --d1-on: #fff;  --d2: #ffc233; --d2-on: #3a2a00;
+      --d3: #2ec4b6; --d3-on: #fff;  --d4: #4cc9f0; --d4-on: #0b2a3a; --d5: #9b7bff; --d5-on: #fff;
       --d6: #f06292; --d6-on: #fff;
-      color-scheme: light dark;
+      --logo-anim: wobble 4s ease-in-out infinite;
+      color-scheme: light;
     }
+    /* Candy follows the phone's dark mode */
     @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
+      :root:not([data-skin]), [data-skin="candy"] {
         --bg: #1b1730; --card: #27224a; --text: #f3efff; --muted: #aaa3c4; --line: #3a3460;
-        --ok: #4ade80; --ok-soft: #14532d; --chip: #3a3460; --chip-text: #cfc3ff;
-        --blob-1: rgba(255, 92, 138, .22); --blob-2: rgba(46, 196, 182, .2); --blob-3: rgba(255, 183, 3, .16);
+        --ok: #4ade80; --chip: #3a3460; --chip-text: #cfc3ff;
+        --bg-image:
+          radial-gradient(42vw 42vw at 8% 6%, rgba(255, 92, 138, .22), transparent 70%),
+          radial-gradient(48vw 48vw at 100% 28%, rgba(46, 196, 182, .2), transparent 70%),
+          radial-gradient(44vw 44vw at 20% 100%, rgba(255, 183, 3, .16), transparent 70%);
         --shadow: 0 2px 4px rgba(0, 0, 0, .3), 0 10px 28px rgba(0, 0, 0, .35);
         color-scheme: dark;
       }
     }
-    :root[data-theme="dark"] {
-      --bg: #1b1730; --card: #27224a; --text: #f3efff; --muted: #aaa3c4; --line: #3a3460;
-      --ok: #4ade80; --ok-soft: #14532d; --chip: #3a3460; --chip-text: #cfc3ff;
-      --blob-1: rgba(255, 92, 138, .22); --blob-2: rgba(46, 196, 182, .2); --blob-3: rgba(255, 183, 3, .16);
-      --shadow: 0 2px 4px rgba(0, 0, 0, .3), 0 10px 28px rgba(0, 0, 0, .35);
+
+    /* Pill Party: a repeating wallpaper of light pills shaped like the app icon */
+    [data-skin="pills"] {
+      --bg: #fff8fb;
+      --bg-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg transform='rotate(-40 45 45)'%3E%3Crect x='19' y='36' width='52' height='18' rx='9' fill='%23ffd3e0'/%3E%3Cpath d='M45 36h17a9 9 0 0 1 0 18H45z' fill='%23fff0b3'/%3E%3C/g%3E%3Cg transform='rotate(35 135 120)'%3E%3Crect x='109' y='111' width='52' height='18' rx='9' fill='%23ffd3e0'/%3E%3Cpath d='M135 111h17a9 9 0 0 1 0 18h-17z' fill='%23fff0b3'/%3E%3C/g%3E%3Cg transform='rotate(-15 50 140)'%3E%3Crect x='32' y='133' width='36' height='14' rx='7' fill='%23ffe1ea'/%3E%3Cpath d='M50 133h11a7 7 0 0 1 0 14H50z' fill='%23fff4c7'/%3E%3C/g%3E%3Cg transform='rotate(60 140 40)'%3E%3Crect x='122' y='33' width='36' height='14' rx='7' fill='%23ffe1ea'/%3E%3Cpath d='M140 33h11a7 7 0 0 1 0 14h-11z' fill='%23fff4c7'/%3E%3C/g%3E%3C/svg%3E");
+      --bg-size: 180px; --bg-repeat: repeat;
+      --card: #ffffff; --card-border: #ffd3e0;
+      --text: #3d2230; --muted: #8a6478; --line: #ffd9e4;
+      --pop: #ff5c8a; --pop-2: #ffb703; --pop-text: #ffffff; --pop-shadow: rgba(255, 92, 138, .35);
+      --ok: #22c55e; --chip: #fff0b3; --chip-text: #8a5a00;
+      --shadow: 0 2px 4px rgba(90, 30, 60, .05), 0 10px 24px rgba(90, 30, 60, .10);
+      --radius: 20px;
+      --display: "Fredoka", "Nunito", -apple-system, "Segoe UI", sans-serif;
+      --body: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --d0: #ff5c8a; --d0-on: #fff;  --d1: #ff8c42; --d1-on: #fff;  --d2: #ffc233; --d2-on: #3a2a00;
+      --d3: #2ec4b6; --d3-on: #fff;  --d4: #4cc9f0; --d4-on: #0b2a3a; --d5: #9b7bff; --d5-on: #fff;
+      --d6: #f06292; --d6-on: #fff;
+      --logo-anim: wobble 4s ease-in-out infinite;
+      color-scheme: light;
+    }
+
+    /* Fresh Mint: calm, clinical, teal */
+    [data-skin="fresh"] {
+      --bg: #eefaf7;
+      --bg-image: linear-gradient(180deg, rgba(13, 148, 136, .10), transparent 40%);
+      --bg-size: auto; --bg-repeat: no-repeat;
+      --card: #ffffff; --card-border: transparent;
+      --text: #15201e; --muted: #5f6f6c; --line: #d6e8e4;
+      --pop: #0d9488; --pop-2: #0ea5e9; --pop-text: #ffffff; --pop-shadow: rgba(13, 148, 136, .3);
+      --ok: #16a34a; --chip: #d8f3ef; --chip-text: #0f766e;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 8px 20px rgba(13, 148, 136, .08);
+      --radius: 14px;
+      --display: "Poppins", -apple-system, "Segoe UI", sans-serif;
+      --body: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --d0: #0d9488; --d0-on: #fff;  --d1: #0ea5e9; --d1-on: #fff;  --d2: #10b981; --d2-on: #fff;
+      --d3: #14b8a6; --d3-on: #fff;  --d4: #3b82f6; --d4-on: #fff;  --d5: #06b6d4; --d5-on: #fff;
+      --d6: #22c55e; --d6-on: #fff;
+      --logo-anim: none;
+      color-scheme: light;
+    }
+
+    /* Midnight Neon: always dark, glowing accents */
+    [data-skin="midnight"] {
+      --bg: #0b1020;
+      --bg-image:
+        radial-gradient(50vw 50vw at 90% 0%, rgba(255, 45, 149, .22), transparent 70%),
+        radial-gradient(50vw 50vw at 0% 100%, rgba(0, 245, 212, .18), transparent 70%);
+      --bg-size: auto; --bg-repeat: no-repeat;
+      --card: #161c33; --card-border: #262e4d;
+      --text: #f1f3ff; --muted: #9aa3c7; --line: #2a3254;
+      --pop: #ff2d95; --pop-2: #00f5d4; --pop-text: #0b1020; --pop-shadow: rgba(255, 45, 149, .4);
+      --ok: #00f5a0; --chip: #262e4d; --chip-text: #9ff5ea;
+      --shadow: 0 2px 4px rgba(0, 0, 0, .4), 0 10px 28px rgba(0, 0, 0, .45);
+      --radius: 16px;
+      --display: "Poppins", -apple-system, "Segoe UI", sans-serif;
+      --body: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --d0: #ff2d95; --d0-on: #fff;  --d1: #ff7a00; --d1-on: #fff;  --d2: #ffd60a; --d2-on: #2a2000;
+      --d3: #00f5d4; --d3-on: #04302b; --d4: #00b4ff; --d4-on: #04243a; --d5: #b388ff; --d5-on: #fff;
+      --d6: #ff5c8a; --d6-on: #fff;
+      --logo-anim: none;
       color-scheme: dark;
     }
 
+    /* Sunset: warm sky gradient, frosted cards */
+    [data-skin="sunset"] {
+      --bg: #ffd9c2;
+      --bg-image: linear-gradient(165deg, #ffe3b8 0%, #ffb8c6 48%, #d2b8ff 100%);
+      --bg-size: auto; --bg-repeat: no-repeat;
+      --card: rgba(255, 255, 255, .82); --card-border: rgba(255, 255, 255, .9);
+      --text: #3b2240; --muted: #7a5a80; --line: rgba(120, 60, 120, .18);
+      --pop: #ff6a3d; --pop-2: #ff3d8a; --pop-text: #ffffff; --pop-shadow: rgba(255, 90, 90, .35);
+      --ok: #16a34a; --chip: rgba(255, 255, 255, .75); --chip-text: #b03a6a;
+      --shadow: 0 2px 4px rgba(120, 50, 80, .06), 0 10px 26px rgba(120, 50, 80, .14);
+      --radius: 22px;
+      --display: "Fredoka", "Nunito", -apple-system, "Segoe UI", sans-serif;
+      --body: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --d0: #ff7043; --d0-on: #fff;  --d1: #ff8a65; --d1-on: #fff;  --d2: #ffb74d; --d2-on: #3a2000;
+      --d3: #f06292; --d3-on: #fff;  --d4: #ba68c8; --d4-on: #fff;  --d5: #ff5252; --d5-on: #fff;
+      --d6: #ffa726; --d6-on: #3a2000;
+      --logo-anim: wobble 4s ease-in-out infinite;
+      color-scheme: light;
+    }
+
+    /* Simple: plain and quiet, one blue */
+    [data-skin="simple"] {
+      --bg: #ffffff;
+      --bg-image: none;
+      --bg-size: auto; --bg-repeat: no-repeat;
+      --card: #ffffff; --card-border: #e5e7eb;
+      --text: #111827; --muted: #6b7280; --line: #e5e7eb;
+      --pop: #2563eb; --pop-2: #2563eb; --pop-text: #ffffff; --pop-shadow: rgba(37, 99, 235, .25);
+      --ok: #16a34a; --chip: #eff6ff; --chip-text: #1d4ed8;
+      --shadow: none;
+      --radius: 12px;
+      --display: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --d0: #2563eb; --d0-on: #fff;  --d1: #2563eb; --d1-on: #fff;  --d2: #2563eb; --d2-on: #fff;
+      --d3: #2563eb; --d3-on: #fff;  --d4: #2563eb; --d4-on: #fff;  --d5: #2563eb; --d5-on: #fff;
+      --d6: #2563eb; --d6-on: #fff;
+      --logo-anim: none;
+      color-scheme: light;
+    }
+
+    /* ===== Page ===== */
     * { box-sizing: border-box; }
     html, body { margin: 0; }
     body {
@@ -75,17 +178,15 @@
       padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
       min-height: 100vh;
       overflow-x: hidden;
-      position: relative;
     }
-    /* soft floating colour blobs behind everything */
-    body::before, body::after {
+    /* the design's wallpaper, fixed behind everything */
+    body::before {
       content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-      background:
-        radial-gradient(42vw 42vw at 8% 6%, var(--blob-1), transparent 70%),
-        radial-gradient(48vw 48vw at 100% 28%, var(--blob-2), transparent 70%),
-        radial-gradient(44vw 44vw at 20% 100%, var(--blob-3), transparent 70%);
+      background-color: var(--bg);
+      background-image: var(--bg-image);
+      background-size: var(--bg-size);
+      background-repeat: var(--bg-repeat);
     }
-    body::after { display: none; }
     main { max-width: 440px; margin: 0 auto; }
 
     header { display: flex; align-items: center; gap: 12px; margin: 6px 0 18px; }
@@ -93,16 +194,23 @@
       width: 46px; height: 46px; border-radius: 15px; flex: none;
       background: linear-gradient(135deg, var(--pop), var(--pop-2));
       display: grid; place-items: center; box-shadow: var(--shadow);
-      animation: wobble 4s ease-in-out infinite;
+      animation: var(--logo-anim);
     }
-    header h1 { font-family: var(--display); font-weight: 700; font-size: 28px; margin: 0; letter-spacing: .01em; }
-    header p { margin: 0; color: var(--muted); font-size: 13px; font-weight: 700; }
+    header .logo svg { stroke: var(--pop-text); }
+    header .titles { flex: 1; min-width: 0; }
+    header h1 { font-family: var(--display); font-weight: 700; font-size: 28px; margin: 0; letter-spacing: .01em; line-height: 1.1; }
+    header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; font-weight: 700; }
+    .gear {
+      width: 44px; height: 44px; border-radius: 14px; border: 2px solid var(--line); background: var(--card);
+      color: var(--muted); display: grid; place-items: center; cursor: pointer; flex: none; box-shadow: var(--shadow);
+    }
+    .gear:active { transform: scale(.95); }
     @keyframes wobble { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
 
     .status {
-      background: var(--card); border-radius: 22px; padding: 18px;
+      background: var(--card); border-radius: calc(var(--radius) + 4px); padding: 18px;
       box-shadow: var(--shadow); display: flex; align-items: center; gap: 16px;
-      border: 2px solid transparent; transition: border-color .25s ease;
+      border: 2px solid var(--card-border); transition: border-color .25s ease;
     }
     .status .ring {
       width: 66px; height: 66px; border-radius: 50%; flex: none;
@@ -122,14 +230,14 @@
 
     .big {
       display: block; width: 100%; margin: 14px 0 24px; padding: 17px;
-      border: 0; border-radius: 18px; color: #fff;
+      border: 0; border-radius: var(--radius); color: var(--pop-text);
       background: linear-gradient(135deg, var(--pop), var(--pop-2));
       font-family: var(--display); font-weight: 600; font-size: 19px; letter-spacing: .01em;
-      cursor: pointer; box-shadow: 0 8px 22px rgba(255, 92, 138, .35);
+      cursor: pointer; box-shadow: 0 8px 22px var(--pop-shadow);
       transition: transform .1s ease, filter .15s ease, box-shadow .15s ease;
     }
     .big:active { transform: scale(.975); filter: brightness(.95); }
-    .big[disabled] { background: var(--ok); box-shadow: none; cursor: default; }
+    .big[disabled] { background: var(--ok); color: #fff; box-shadow: none; cursor: default; }
 
     h2 {
       font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: .04em;
@@ -139,17 +247,17 @@
     .days { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
     .day {
       width: 100%; display: flex; align-items: center; gap: 12px;
-      padding: 11px 14px 11px 11px; border-radius: 18px; border: 2px solid var(--line);
+      padding: 11px 14px 11px 11px; border-radius: var(--radius); border: 2px solid var(--line);
       background: var(--card); color: var(--text); font: inherit; font-size: 18px; font-weight: 800;
       cursor: pointer; text-align: left; box-shadow: var(--shadow);
       transition: background .18s ease, border-color .18s ease, transform .1s ease, color .18s ease;
     }
     .day:active { transform: scale(.985); }
     .day .badge {
-      width: 40px; height: 40px; border-radius: 13px; flex: none;
+      width: 40px; height: 40px; border-radius: calc(var(--radius) - 5px); flex: none;
       background: var(--c); color: var(--on);
       font-family: var(--display); font-weight: 700; font-size: 19px;
-      display: grid; place-items: center; transition: transform .2s ease;
+      display: grid; place-items: center;
     }
     .day .badge svg { display: none; width: 22px; height: 22px; }
     .day .name { flex: 1; }
@@ -168,7 +276,7 @@
     .hint { color: var(--muted); font-size: 13px; font-weight: 700; text-align: center; margin: 20px 0 0; line-height: 1.55; }
 
     .install {
-      margin-top: 22px; padding: 14px 16px; border-radius: 18px; background: var(--card);
+      margin-top: 22px; padding: 14px 16px; border-radius: var(--radius); background: var(--card);
       border: 2px dashed var(--line); font-size: 14px; font-weight: 600; color: var(--muted); line-height: 1.5;
     }
     .install strong { color: var(--text); font-weight: 800; }
@@ -179,6 +287,73 @@
     .hidden { display: none !important; }
 
     #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+
+    /* ===== Settings page ===== */
+    .settings {
+      position: fixed; inset: 0; z-index: 40; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      background-color: var(--bg); background-image: var(--bg-image); background-size: var(--bg-size); background-repeat: var(--bg-repeat);
+      padding: calc(12px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+      color: var(--text);
+    }
+    .settings .inner { max-width: 440px; margin: 0 auto; }
+    .settings-bar { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; }
+    .settings-bar h2 { font-size: 24px; text-transform: none; letter-spacing: 0; color: var(--text); margin: 0; font-weight: 700; }
+    .back {
+      width: 44px; height: 44px; border-radius: 14px; border: 2px solid var(--line); background: var(--card);
+      color: var(--text); display: grid; place-items: center; cursor: pointer; flex: none;
+    }
+    .settings h3 {
+      font-family: var(--display); font-weight: 600; font-size: 14px; letter-spacing: .04em;
+      text-transform: uppercase; color: var(--muted); margin: 22px 0 10px 6px;
+    }
+    .skins { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .skin {
+      border: 2px solid var(--line); border-radius: var(--radius); background: var(--card); padding: 8px;
+      cursor: pointer; text-align: left; font: inherit; color: var(--text); box-shadow: var(--shadow);
+      display: grid; gap: 8px; position: relative;
+    }
+    .skin.selected { border-color: var(--pop); box-shadow: 0 0 0 3px var(--pop-shadow); }
+    .skin .tick {
+      position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%;
+      background: var(--pop); color: var(--pop-text); display: none; place-items: center;
+    }
+    .skin.selected .tick { display: grid; }
+    .skin .label { font-weight: 800; font-size: 14px; padding: 0 4px 2px; }
+    .skin .label small { display: block; font-weight: 600; color: var(--muted); font-size: 12px; }
+    /* the little preview: same tokens as the real page */
+    .swatch {
+      height: 92px; border-radius: 12px; overflow: hidden; padding: 9px; display: flex; flex-direction: column; gap: 6px;
+      background-color: var(--bg); background-image: var(--bg-image);
+      background-size: var(--bg-size); background-repeat: var(--bg-repeat); background-position: center;
+      color: var(--text); font-family: var(--display);
+    }
+    .swatch .sw-title { font-size: 11px; font-weight: 700; line-height: 1; }
+    .swatch .sw-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 8px; height: 24px; display: flex; align-items: center; gap: 4px; padding: 0 6px; }
+    .swatch .sw-card i { width: 10px; height: 10px; border-radius: 3px; display: block; }
+    .swatch .sw-btn { height: 14px; border-radius: 7px; background: linear-gradient(135deg, var(--pop), var(--pop-2)); }
+    .swatch .sw-row { background: var(--card); border: 1px solid var(--line); border-radius: 8px; height: 16px; }
+
+    .row {
+      display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius);
+      background: var(--card); border: 2px solid var(--line); box-shadow: var(--shadow); font-weight: 700; font-size: 15px;
+    }
+    .row + .row { margin-top: 8px; }
+    .row .grow { flex: 1; min-width: 0; }
+    .row small { display: block; color: var(--muted); font-weight: 600; font-size: 12px; margin-top: 2px; line-height: 1.4; }
+    .switch { position: relative; width: 50px; height: 30px; flex: none; }
+    .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+    .switch span {
+      position: absolute; inset: 0; border-radius: 999px; background: var(--line); transition: background .15s ease;
+    }
+    .switch span::after {
+      content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%;
+      background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .15s ease;
+    }
+    .switch input:checked + span { background: var(--pop); }
+    .switch input:checked + span::after { transform: translateX(20px); }
+    .switch input:focus-visible + span { outline: 3px solid var(--pop-shadow); }
+    .note { color: var(--muted); font-size: 13px; font-weight: 600; line-height: 1.5; margin: 10px 6px 0; }
+    .status-line { font-size: 12px; font-weight: 700; margin-top: 4px; }
 
     @media (prefers-reduced-motion: reduce) {
       header .logo, .status .ring .check, .day.selected .badge { animation: none; }
@@ -191,14 +366,19 @@
   <main>
     <header>
       <div class="logo" aria-hidden="true">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
           <path d="M10.5 20.5a5 5 0 0 1-7-7l10-10a5 5 0 0 1 7 7Z"/><path d="M8.5 8.5l7 7"/>
         </svg>
       </div>
-      <div>
+      <div class="titles">
         <h1>Pill Tracker</h1>
         <p id="tagline">One tap a day keeps the worry away.</p>
       </div>
+      <button class="gear" id="openSettings" type="button" aria-label="Settings">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+        </svg>
+      </button>
     </header>
 
     <section class="status" id="status" aria-live="polite">
@@ -231,12 +411,50 @@
     </div>
   </main>
 
+  <section class="settings hidden" id="settings" aria-label="Settings">
+    <div class="inner">
+      <div class="settings-bar">
+        <button class="back" id="closeSettings" type="button" aria-label="Back">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <h2>Settings</h2>
+      </div>
+
+      <h3>Design</h3>
+      <div class="skins" id="skins"></div>
+
+      <h3>Clock</h3>
+      <label class="row">
+        <span class="grow">24-hour clock<small>Show times as 21:30 instead of 9:30 PM.</small></span>
+        <span class="switch"><input type="checkbox" id="clock24"><span></span></span>
+      </label>
+
+      <h3>Home screen icon</h3>
+      <label class="row">
+        <span class="grow">Red badge while not taken<small>Puts a red dot on the app icon until you mark today's pill. It updates when the app is opened.</small><span class="status-line" id="badgeStatus"></span></span>
+        <span class="switch"><input type="checkbox" id="badgeOn"><span></span></span>
+      </label>
+      <p class="note">On iPhone the badge only works once the app is on your home screen, and the phone will ask to allow notifications the first time you switch it on. Everything is saved on this phone only.</p>
+
+      <p class="note" style="text-align:center;margin-top:28px">Pill Tracker 1.3</p>
+    </div>
+  </section>
+
   <script>
     (function () {
       var DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
       var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       var CHEERS = ['Nailed it!', 'Boom, done for today.', 'Future you says thanks.', 'Look at you go.', 'Pill: taken. You: brilliant.', 'That was easy.', 'Gold star for today.'];
+      var SKINS = [
+        { id: 'candy',    name: 'Candy',          blurb: 'Playful and bright. Follows dark mode.' },
+        { id: 'pills',    name: 'Pill Party',     blurb: 'Little pills all over the background.' },
+        { id: 'fresh',    name: 'Fresh Mint',     blurb: 'Calm teal, clean and clear.' },
+        { id: 'midnight', name: 'Midnight Neon',  blurb: 'Always dark, with glowing colours.' },
+        { id: 'sunset',   name: 'Sunset',         blurb: 'Warm evening sky, frosted cards.' },
+        { id: 'simple',   name: 'Simple',         blurb: 'Plain white, one blue, no fuss.' }
+      ];
       var KEY = 'pillTracker.v1';
+      var PREFS_KEY = 'pillTracker.prefs';
       var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       function pad(n) { return (n < 10 ? '0' : '') + n; }
@@ -252,11 +470,14 @@
       function parseIso(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
       function pretty(d) { return DAYS[dayIndex(d)] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()]; }
       function fmtTime(ms) {
-        try { return new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
-        catch (e) { var d = new Date(ms); return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+        var d = new Date(ms);
+        if (prefs.clock24) return pad(d.getHours()) + ':' + pad(d.getMinutes());
+        try { return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }); }
+        catch (e) { return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
       }
       function dayOfYear(d) { return Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5); }
 
+      // ---- Storage ----
       function load() {
         try {
           var s = JSON.parse(localStorage.getItem(KEY));
@@ -270,14 +491,27 @@
       function save(s) {
         try { s ? localStorage.setItem(KEY, JSON.stringify(s)) : localStorage.removeItem(KEY); } catch (e) {}
       }
+      function loadPrefs() {
+        var p = { skin: 'candy', clock24: true, badge: true };
+        try {
+          var s = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+          if (SKINS.some(function (k) { return k.id === s.skin; })) p.skin = s.skin;
+          if (typeof s.clock24 === 'boolean') p.clock24 = s.clock24;
+          if (typeof s.badge === 'boolean') p.badge = s.badge;
+        } catch (e) {}
+        return p;
+      }
+      function savePrefs() { try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (e) {} }
 
       var state = load();
+      var prefs = loadPrefs();
       var list = document.getElementById('days');
       var statusEl = document.getElementById('status');
       var statusTitle = document.getElementById('statusTitle');
       var statusSub = document.getElementById('statusSub');
       var takeToday = document.getElementById('takeToday');
 
+      // ---- Main screen ----
       function render() {
         var today = startOfToday();
         var todayIdx = dayIndex(today);
@@ -320,6 +554,7 @@
           statusTitle.textContent = 'Not taken yet today';
           statusSub.textContent = "Tap today's day once you've taken it.";
         }
+        updateBadge(takenToday);
       }
 
       function toggle(idx) {
@@ -336,7 +571,89 @@
 
       takeToday.addEventListener('click', function () { toggle(dayIndex(startOfToday())); });
       document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
+
+      // ---- Icon badge ----
+      var badgeSupported = 'setAppBadge' in navigator;
+      function updateBadge(takenToday) {
+        if (!badgeSupported) return;
+        var p = (prefs.badge && !takenToday) ? navigator.setAppBadge(1) : navigator.clearAppBadge();
+        if (p && p.catch) p.catch(function () {});
+      }
+
+      // ---- Design / theme ----
+      function applySkin() {
+        document.documentElement.setAttribute('data-skin', prefs.skin);
+        var bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+        if (bg) document.getElementById('themeColor').setAttribute('content', bg);
+        var cards = document.querySelectorAll('.skin');
+        for (var i = 0; i < cards.length; i++) {
+          cards[i].classList.toggle('selected', cards[i].getAttribute('data-id') === prefs.skin);
+          cards[i].setAttribute('aria-pressed', cards[i].getAttribute('data-id') === prefs.skin ? 'true' : 'false');
+        }
+      }
+      function buildSkins() {
+        var wrap = document.getElementById('skins');
+        SKINS.forEach(function (k) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'skin';
+          b.setAttribute('data-id', k.id);
+          b.innerHTML =
+            '<div class="swatch" data-skin="' + k.id + '">' +
+              '<div class="sw-title">Pill Tracker</div>' +
+              '<div class="sw-card"><i style="background:var(--d0)"></i><i style="background:var(--d2)"></i><i style="background:var(--d3)"></i><i style="background:var(--d5)"></i></div>' +
+              '<div class="sw-btn"></div>' +
+              '<div class="sw-row"></div>' +
+            '</div>' +
+            '<span class="tick" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>' +
+            '<div class="label">' + k.name + '<small>' + k.blurb + '</small></div>';
+          b.addEventListener('click', function () { prefs.skin = k.id; savePrefs(); applySkin(); });
+          wrap.appendChild(b);
+        });
+      }
+
+      // ---- Settings page ----
+      var settings = document.getElementById('settings');
+      var clock24 = document.getElementById('clock24');
+      var badgeOn = document.getElementById('badgeOn');
+      var badgeStatus = document.getElementById('badgeStatus');
+      var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+
+      function showSettings(open) {
+        settings.classList.toggle('hidden', !open);
+        document.body.style.overflow = open ? 'hidden' : '';
+        if (open) settings.scrollTop = 0;
+      }
+      document.getElementById('openSettings').addEventListener('click', function () { location.hash = 'settings'; });
+      document.getElementById('closeSettings').addEventListener('click', function () {
+        if (location.hash === '#settings') history.back(); else showSettings(false);
+      });
+      window.addEventListener('hashchange', function () { showSettings(location.hash === '#settings'); });
+
+      clock24.checked = prefs.clock24;
+      clock24.addEventListener('change', function () { prefs.clock24 = clock24.checked; savePrefs(); render(); });
+
+      badgeOn.checked = prefs.badge;
+      function badgeText() {
+        if (badgeSupported) return 'Badges work on this phone.';
+        if (isIos && !standalone) return 'Add the app to your home screen first, then switch this on from there.';
+        return 'This browser cannot show icon badges.';
+      }
+      badgeStatus.textContent = badgeText();
+      badgeOn.addEventListener('change', function () {
+        prefs.badge = badgeOn.checked; savePrefs();
+        if (prefs.badge && window.Notification && Notification.permission === 'default' && Notification.requestPermission) {
+          try { Notification.requestPermission().then(function () { render(); }); } catch (e) { render(); }
+        } else {
+          render();
+        }
+      });
+
+      buildSkins();
+      applySkin();
       render();
+      showSettings(location.hash === '#settings');
 
       // ---- Confetti ----
       function confetti() {
@@ -374,12 +691,10 @@
       }
 
       // ---- Install helpers ----
-      var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
       var installBox = document.getElementById('install');
       if (standalone) {
         installBox.classList.add('hidden');
       } else {
-        var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
         if (isIos) {
           document.getElementById('installIos').classList.remove('hidden');
           document.getElementById('installOther').classList.add('hidden');

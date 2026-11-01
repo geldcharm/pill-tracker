@@ -5,6 +5,9 @@ A one-tap weekly pill tracker you can install on your phone.
 - Tap the day you took your pill. Only one day stays marked at a time.
 - Tap the marked day again to clear it.
 - The status card says "Taken today" or "Not taken yet today", with the last day it was taken.
+- Records the time you tapped and shows it on the card and the marked day.
+- Settings (gear icon): pick one of six designs, choose a 24-hour or 12-hour clock, and turn the red icon badge on or off.
+- Red badge: while today's pill is not marked, the home screen icon shows a red dot. It updates whenever the app is opened. On iPhone it needs the app on the home screen and notification permission.
 - Works offline once installed. Everything is saved on the phone itself.
 
 ## Run it locally
