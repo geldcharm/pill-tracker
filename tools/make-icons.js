@@ -2,9 +2,9 @@
 // Draws a teal rounded square with a two-tone capsule on it.
 var fs = require('fs'), path = require('path'), zlib = require('zlib');
 
-var BG = [13, 148, 136];        // #0d9488
+var BG = [255, 92, 138];        // #ff5c8a
 var CAP_A = [255, 255, 255];    // white half
-var CAP_B = [204, 251, 241];    // pale teal half
+var CAP_B = [255, 226, 120];    // sunny yellow half
 var OUT = path.join(__dirname, '..', 'icons');
 
 function crcTable() {
