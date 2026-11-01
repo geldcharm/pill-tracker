@@ -15,6 +15,10 @@ node serve.js
 
 Then open http://localhost:8080.
 
+## Live app
+
+https://geldcharm.github.io/pill-tracker/ (GitHub Pages, deployed from the `main` branch).
+
 ## Put it on a phone
 
 The app has to be reachable from the phone over HTTPS. Easiest free option: GitHub Pages.
