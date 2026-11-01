@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&family=Poppins:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap">
   <script>
     // Apply the saved design before the first paint so there is no flash of the default look.
     (function () {
@@ -199,7 +199,7 @@
     header .logo svg { stroke: var(--pop-text); }
     header .titles { flex: 1; min-width: 0; }
     header h1 { font-family: var(--display); font-weight: 700; font-size: 28px; margin: 0; letter-spacing: .01em; line-height: 1.1; }
-    header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; font-weight: 700; }
+    header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; font-weight: 500; }
     .gear {
       width: 44px; height: 44px; border-radius: 14px; border: 2px solid var(--line); background: var(--card);
       color: var(--muted); display: grid; place-items: center; cursor: pointer; flex: none; box-shadow: var(--shadow);
@@ -224,8 +224,8 @@
     .status.taken .ring .capsule { display: none; }
     .status.taken .ring .check { display: block; animation: pop .45s cubic-bezier(.2, 1.6, .4, 1); }
     .status .title { font-family: var(--display); font-weight: 600; font-size: 22px; margin: 0 0 3px; line-height: 1.15; }
-    .status .sub { color: var(--muted); font-size: 14px; font-weight: 700; margin: 0; line-height: 1.4; }
-    .status .sub b { color: var(--text); font-weight: 800; }
+    .status .sub { color: var(--muted); font-size: 15px; font-weight: 500; margin: 0; line-height: 1.45; }
+    .status .sub b { color: var(--text); font-weight: 700; }
     @keyframes pop { 0% { transform: scale(.3) rotate(-20deg); } 100% { transform: scale(1) rotate(0); } }
 
     .big {
@@ -248,7 +248,7 @@
     .day {
       width: 100%; display: flex; align-items: center; gap: 12px;
       padding: 11px 14px 11px 11px; border-radius: var(--radius); border: 2px solid var(--line);
-      background: var(--card); color: var(--text); font: inherit; font-size: 18px; font-weight: 800;
+      background: var(--card); color: var(--text); font: inherit; font-size: 18px; font-weight: 600;
       cursor: pointer; text-align: left; box-shadow: var(--shadow);
       transition: background .18s ease, border-color .18s ease, transform .1s ease, color .18s ease;
     }
@@ -261,9 +261,9 @@
     }
     .day .badge svg { display: none; width: 22px; height: 22px; }
     .day .name { flex: 1; }
-    .day .time { font-size: 14px; font-weight: 800; opacity: .9; font-variant-numeric: tabular-nums; }
+    .day .time { font-size: 15px; font-weight: 600; opacity: .95; font-variant-numeric: tabular-nums; }
     .day .today {
-      font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+      font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
       color: var(--chip-text); background: var(--chip); padding: 4px 9px; border-radius: 999px;
     }
     .day.is-today { border-color: var(--c); }
@@ -273,16 +273,16 @@
     .day.selected .badge svg { display: block; }
     .day.selected .today { background: rgba(255, 255, 255, .28); color: var(--on); }
 
-    .hint { color: var(--muted); font-size: 13px; font-weight: 700; text-align: center; margin: 20px 0 0; line-height: 1.55; }
+    .hint { color: var(--muted); font-size: 14px; font-weight: 500; text-align: center; margin: 20px 0 0; line-height: 1.55; }
 
     .install {
       margin-top: 22px; padding: 14px 16px; border-radius: var(--radius); background: var(--card);
-      border: 2px dashed var(--line); font-size: 14px; font-weight: 600; color: var(--muted); line-height: 1.5;
+      border: 2px dashed var(--line); font-size: 14px; font-weight: 500; color: var(--muted); line-height: 1.5;
     }
-    .install strong { color: var(--text); font-weight: 800; }
+    .install strong { color: var(--text); font-weight: 700; }
     .install button {
       margin-top: 10px; padding: 10px 14px; border-radius: 12px; border: 0;
-      background: var(--chip); color: var(--chip-text); font: inherit; font-weight: 800; cursor: pointer;
+      background: var(--chip); color: var(--chip-text); font: inherit; font-weight: 700; cursor: pointer;
     }
     .hidden { display: none !important; }
 
@@ -318,8 +318,8 @@
       background: var(--pop); color: var(--pop-text); display: none; place-items: center;
     }
     .skin.selected .tick { display: grid; }
-    .skin .label { font-weight: 800; font-size: 14px; padding: 0 4px 2px; }
-    .skin .label small { display: block; font-weight: 600; color: var(--muted); font-size: 12px; }
+    .skin .label { font-weight: 700; font-size: 14px; padding: 0 4px 2px; }
+    .skin .label small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; margin-top: 2px; line-height: 1.35; }
     /* the little preview: same tokens as the real page */
     .swatch {
       height: 92px; border-radius: 12px; overflow: hidden; padding: 9px; display: flex; flex-direction: column; gap: 6px;
@@ -335,11 +335,11 @@
 
     .row {
       display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius);
-      background: var(--card); border: 2px solid var(--line); box-shadow: var(--shadow); font-weight: 700; font-size: 15px;
+      background: var(--card); border: 2px solid var(--line); box-shadow: var(--shadow); font-weight: 600; font-size: 15px;
     }
     .row + .row { margin-top: 8px; }
     .row .grow { flex: 1; min-width: 0; }
-    .row small { display: block; color: var(--muted); font-weight: 600; font-size: 12px; margin-top: 2px; line-height: 1.4; }
+    .row small { display: block; color: var(--muted); font-weight: 500; font-size: 13px; margin-top: 3px; line-height: 1.45; }
     .switch { position: relative; width: 50px; height: 30px; flex: none; }
     .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
     .switch span {
@@ -352,8 +352,8 @@
     .switch input:checked + span { background: var(--pop); }
     .switch input:checked + span::after { transform: translateX(20px); }
     .switch input:focus-visible + span { outline: 3px solid var(--pop-shadow); }
-    .note { color: var(--muted); font-size: 13px; font-weight: 600; line-height: 1.5; margin: 10px 6px 0; }
-    .status-line { font-size: 12px; font-weight: 700; margin-top: 4px; }
+    .note { color: var(--muted); font-size: 13px; font-weight: 500; line-height: 1.55; margin: 10px 6px 0; }
+    .status-line { font-size: 12px; font-weight: 600; margin-top: 4px; }
 
     @media (prefers-reduced-motion: reduce) {
       header .logo, .status .ring .check, .day.selected .badge { animation: none; }
@@ -436,7 +436,7 @@
       </label>
       <p class="note">On iPhone the badge only works once the app is on your home screen, and the phone will ask to allow notifications the first time you switch it on. Everything is saved on this phone only.</p>
 
-      <p class="note" style="text-align:center;margin-top:28px">Pill Tracker 1.3</p>
+      <p class="note" style="text-align:center;margin-top:28px">Pill Tracker 1.4</p>
     </div>
   </section>
 

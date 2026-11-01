@@ -1,5 +1,5 @@
 // Caches the app shell so the tracker opens offline once it has been visited.
-var CACHE = 'pill-tracker-v3';
+var CACHE = 'pill-tracker-v4';
 var FILES = [
   './',
   './index.html',
